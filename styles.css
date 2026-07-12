@@ -3638,6 +3638,12 @@ h1 {
   font-weight: 800;
 }
 
+.theme-hit mark.aligned-term {
+  cursor: help;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}
+
 .matched-theme-intro {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);

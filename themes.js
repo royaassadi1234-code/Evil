@@ -14,6 +14,7 @@ const themeState = {
   dictionary: new Map(),
   selectedThemeId: "",
   themeSearch: "",
+  freeSearch: "",
   themeMenuOpen: false,
   keywords: "",
   wholeWord: true,
@@ -111,6 +112,7 @@ function bindThemeEvents() {
 
   themeSearchEl.addEventListener("focus", () => {
     themeState.themeSearch = "";
+    themeState.freeSearch = "";
     themeSearchEl.value = "";
     themeState.themeMenuOpen = true;
     renderThemeTitleMenu();
@@ -118,8 +120,19 @@ function bindThemeEvents() {
 
   themeSearchEl.addEventListener("input", () => {
     themeState.themeSearch = themeSearchEl.value;
+    themeState.freeSearch = themeSearchEl.value.trim();
     themeState.themeMenuOpen = true;
     renderThemeTitleMenu();
+    scheduleThemeKeywordRender();
+  });
+
+  themeSearchEl.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && themeState.freeSearch) {
+      event.preventDefault();
+      themeState.themeMenuOpen = false;
+      renderThemeTitleMenu();
+      renderThemesImmediately();
+    }
   });
 
   document.addEventListener("click", (event) => {
@@ -243,6 +256,7 @@ function renderThemeTitleMenu() {
   themeTitleMenuEl.querySelectorAll("[data-theme-id]").forEach((button) => {
     button.addEventListener("click", () => {
       themeState.selectedThemeId = button.dataset.themeId;
+      themeState.freeSearch = "";
       themeState.themeMenuOpen = false;
       syncThemeSearchInput();
       syncKeywordInput();
@@ -268,6 +282,10 @@ function syncKeywordInput() {
 
 function renderThemes() {
   const theme = getSelectedTheme();
+  if (themeState.freeSearch) {
+    renderFreeSearch(themeState.freeSearch);
+    return;
+  }
   if (!theme) {
     statusEl.textContent = "No themes";
     overviewEl.innerHTML = "";
@@ -278,13 +296,32 @@ function renderThemes() {
   const terms = getKeywordTerms();
   const results = themeState.texts.map((text) => {
     const textTerms = getThemeTermsForText(theme, text, terms);
-    return { ...getThemeMatches(text, textTerms), terms: textTerms };
+    return { ...getThemeMatches(text, textTerms), terms: textTerms, alignmentTheme: theme };
   });
   const totalHits = results.reduce((sum, result) => sum + result.matches.length, 0);
   const textHits = results.filter((result) => result.matches.length > 0).length;
 
   statusEl.textContent = `${textHits} of ${results.length} texts | ${totalHits} passages`;
   renderThemeOverview(theme, terms, results);
+  renderThemeComparison(results, terms);
+}
+
+function renderFreeSearch(query) {
+  const terms = query.split(/[,;\n]+/).map((term) => term.trim()).filter(Boolean);
+  const results = themeState.texts.map((text) => ({
+    ...getThemeMatches(text, terms),
+    terms,
+    alignmentTheme: null
+  }));
+  const totalHits = results.reduce((sum, result) => sum + result.matches.length, 0);
+  const textHits = results.filter((result) => result.matches.length > 0).length;
+  statusEl.textContent = `${textHits} of ${results.length} texts | ${totalHits} passages`;
+  overviewEl.innerHTML = `
+    <article class="text-card theme-description-card">
+      <div class="siglum">Independent search</div>
+      <h2>${escapeHtml(query)}</h2>
+      <p class="meta">Exact word or phrase search across every corpus text.</p>
+    </article>`;
   renderThemeComparison(results, terms);
 }
 
@@ -327,14 +364,14 @@ function renderThemeColumn(result, terms) {
         <span class="count-pill ${total ? "hit" : "miss"}">${total}</span>
       </header>
       <div class="theme-passages">
-        ${visible.length ? visible.map((match) => renderThemeHit(match, result.terms || terms, result.text)).join("") : `<div class="empty-state">No suggested passages for this theme.</div>`}
+        ${visible.length ? visible.map((match) => renderThemeHit(match, result.terms || terms, result.text, result.alignmentTheme)).join("") : `<div class="empty-state">No suggested passages for this search.</div>`}
       </div>
       ${total > THEME_PAGE_SIZE ? renderThemePagination(result.text.id, currentPage, pageCount) : ""}
     </article>
   `;
 }
 
-function renderThemeHit(match, terms, text) {
+function renderThemeHit(match, terms, text, alignmentTheme) {
   return `
     <section class="theme-hit">
       <div class="theme-hit-meta">
@@ -343,12 +380,37 @@ function renderThemeHit(match, terms, text) {
       </div>
       <div class="theme-hit-content">
         <div>
-          <p>${highlightTheme(match.snippet, terms, { annotate: true })}</p>
+          <p>${alignmentTheme ? highlightAlignedTerms(match.snippet, terms, text, alignmentTheme) : highlightTheme(match.snippet, terms, { annotate: true })}</p>
           ${renderTranslationActions(match.snippet, text.englishByLocation?.get(match.location))}
         </div>
       </div>
     </section>
   `;
+}
+
+function highlightAlignedTerms(value, terms, text, theme) {
+  const source = String(value);
+  const ranges = findMatchRanges(source, terms).sort((a, b) => a.start - b.start || b.end - a.end);
+  let html = "";
+  let cursor = 0;
+  ranges.forEach(({ start, end, termIndex }) => {
+    if (start < cursor) return;
+    const alignment = getAlignmentTooltip(theme, terms[termIndex], text.id);
+    html += escapeHtml(source.slice(cursor, start));
+    html += `<mark class="aligned-term" tabindex="0" title="${escapeHtml(alignment)}">${escapeHtml(source.slice(start, end))}</mark>`;
+    cursor = end;
+  });
+  return html + escapeHtml(source.slice(cursor));
+}
+
+function getAlignmentTooltip(theme, term, textId) {
+  const avestan = theme.avestanKeywords || [];
+  const pahlavi = theme.pahlaviKeywords || [];
+  const source = textId === "av-corpus" ? avestan : pahlavi;
+  const foldedTerm = normalizeQueryText(term);
+  const index = source.findIndex((item) => normalizeQueryText(item) === foldedTerm);
+  if (index < 0) return `Matched form: ${term}`;
+  return `Avestan: ${avestan[index]} | Pahlavi: ${pahlavi[index] || "not available"}`;
 }
 
 function getThemeTermsForText(theme, text, fallbackTerms) {

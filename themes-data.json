@@ -7,19 +7,5 @@
     "avestanKeywords": ["janat̰", "ažīm", "dahākəm", "ϑri.zafanəm", "ϑri.kamərəδəm", "xšuuaš.ašīm", "hazaŋhrā.yaōxštīm", "ašaōjaŋhəm", "daēuuīm", "drujim", "gaēϑāuuiiō", "druuaṇtəm", "kərəṇtat̰", "aŋhrō", "maińiiuš", "mahrkāi", "aṣ̌ahe", "ϑritō", "sāmanąm", "aṣ̌iš", "āiiaptəm", "puϑra", "zaiiōiϑe", "uruuāxšaiiō", "kərəsāspasca", "t̰kaēšō", "uparō", "kairiiō", "gaēsuš", "gaδauuarō"],
     "pahlaviKeywords": ["zad", "az ī dahāg", "dahāg", "sē zafar", "sē kamāl", "šaš aš", "hazār wizōstār", "adādag ī pad gōhrag", "dēw", "druz", "gēhānān", "druwand", "kirrēnīd", "gannāg", "mēnōy", "margīh", "ahlāyīh", "Srid", "Sāmān", "tarsagāhīh", "ābādīh", "dō pus", "ul zād hēnd", "Urwāš", "Kirsāsp", "dādwar", "abarkār", "ǰuyān", "gēswar", "gadwar"],
     "confirmed": []
-  },
-  {
-    "id": "dahag-fredon",
-    "label": "The story of Dahāg and Fredon",
-    "description": "Θraētaona’s most brilliant feat in the Avesta is his victory over the three-headed, six-eyed dragon Dahāka (Yt. 5.33-35, 15.23-24; Y. 9.7-8; Vd. 1.18). Although there and in a tradition related by Ṭabarī (I, p. 208) Θraētaona seems to have killed Dahāka, in the Pahlavi literature (Dēnkard, ed. Madan, pp. 548, 811) it is explicitly reported that, following Ohrmazd’s command, he refrained from killing the dragon, lest various noxious creatures emerge from the corpse; rather, he fettered and imprisoned the beast on Mount Damāvand (q.v.). It will remain there in chains until the end of the world, when it will be slain by Garšāsb (q.v.; Pahlavi Rivayat, ed. Dhabhar, pp. 146-47). This version is also repeated in sources of the Islamic period (Ṭabarī, I, p. 208; Šāh-nāma, ed. Khaleghi, I, pp. 82-83). It seems to be a late Zoroastrian scholastic elaboration of the original Avestan myth (Boyce, Zoroastrianism I, p. 283). It is obviously because of this victory that Ferēdūn is often given the epithets purr-pērōzgar “very victorious” (Pahlavī Rivayat, ed. Dhabhar, p. 134), tagīg “valiant,” and zōrīg “powerful” (Dēnkard, ed. Madan, II, pp. 812, 814).",
-    "keywords": ["Dahāg", "dēw ud Druz", "Frēdōn", "Sāmān Kersāsp", "rist pēš ul hangēzīhēd", "gāwsar", "ristāxēz", "az ī dahāg"],
-    "confirmed": []
-  },
-  {
-    "id": "military-war-metaphors",
-    "label": "Military, war techniques, war metaphors",
-    "description": "Passages about military language, techniques of war, combat, struggle, armies, and metaphorical uses of warfare.",
-    "keywords": ["spāh", "kōxšišn"],
-    "confirmed": []
   }
 ]
