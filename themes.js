@@ -1,8 +1,11 @@
 const THEME_TEXTS = [
-  { id: "dd", siglum: "DD", title: "Dadestan i Denig", file: "Dd.txt", englishFile: "DD-en.txt" },
+  { id: "av-corpus", siglum: "Av.", title: "Avestan Corpus", file: "CABLinguisticCorpus.json", parseMode: "cab-json" },
   { id: "py", siglum: "PY", title: "Pahlavi Yasna", file: "PY-Pt4.txt", englishFile: "PY-en.txt" },
+  { id: "dd", siglum: "DD", title: "Dadestan i Denig", file: "Dd.txt", englishFile: "DD-en.txt" },
   { id: "wz", siglum: "WZ", title: "Wizidagiha i Zadspram", file: "WZ.txt", englishFile: "WZ-en.txt" },
-  { id: "nm", siglum: "NM", title: "Namagiha i Manuscihr", file: "NM.txt", englishFile: "NM-en.txt" }
+  { id: "nm", siglum: "NM", title: "Namagiha i Manuscihr", file: "NM.txt", englishFile: "NM-en.txt" },
+  { id: "prdd", siglum: "PRDD", title: "Pahlavi Rivayat Accompanying the Dadestan i Denig", file: "PRDd.txt", parseMode: "section" },
+  { id: "gbd", siglum: "GBd", title: "Greater Bundahishn", file: "GBd.txt", parseMode: "section" }
 ];
 
 const themeState = {
@@ -196,6 +199,15 @@ async function loadText(config) {
     throw new Error(`Could not load ${config.file}`);
   }
 
+  if (config.parseMode === "cab-json") {
+    return {
+      ...config,
+      raw: "",
+      records: parseCabCorpusRecords(await response.json()),
+      englishByLocation: new Map()
+    };
+  }
+
   const raw = await response.text();
   const englishRecords = englishRaw ? parseRecords(englishRaw) : [];
   return {
@@ -207,6 +219,9 @@ async function loadText(config) {
 }
 
 async function fetchOptionalText(file) {
+  if (!file) {
+    return "";
+  }
   try {
     const response = await fetch(file);
     return response.ok ? response.text() : "";
@@ -274,9 +289,8 @@ function normalizeQueryText(value) {
 }
 
 function syncKeywordInput() {
-  const theme = getSelectedTheme();
-  themeState.keywords = (theme?.keywords || []).join(", ");
-  keywordEl.value = themeState.keywords;
+  themeState.keywords = "";
+  keywordEl.value = "";
 }
 
 function renderThemes() {
@@ -429,6 +443,68 @@ function parseRecords(raw) {
   });
 
   return hasTsvRecords ? parseTsvRecords(lines) : parseSectionRecords(lines);
+}
+
+function parseCabCorpusRecords(data) {
+  const records = [];
+  const excludedTypes = new Set(["pahltr", "pahltxt"]);
+  const structuralKeys = new Set(["div", "ab"]);
+
+  function visit(node, context = {}) {
+    if (Array.isArray(node)) {
+      node.forEach((item) => visit(item, context));
+      return;
+    }
+    if (!node || typeof node !== "object") {
+      return;
+    }
+
+    const type = String(node.type || "").toLowerCase();
+    const language = String(node["xml:lang"] || "").toLowerCase();
+    if (excludedTypes.has(type) || language === "pal") {
+      return;
+    }
+
+    const nextContext = {
+      work: node["xml:id"] && !context.work ? node["xml:id"] : context.work,
+      section: node.n || context.section,
+      id: node["xml:id"] || context.id
+    };
+    const text = [extractCabText(node["#text"]), extractCabText(node.l)]
+      .filter(Boolean)
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (text) {
+      const locationParts = [nextContext.work, nextContext.section || nextContext.id].filter(Boolean);
+      records.push({
+        index: records.length,
+        location: locationParts.join(" · ") || `passage ${records.length + 1}`,
+        text,
+        searchable: true
+      });
+    }
+
+    Object.entries(node).forEach(([key, value]) => {
+      if (structuralKeys.has(key)) {
+        visit(value, nextContext);
+      }
+    });
+  }
+
+  visit(Array.isArray(data?.text) ? data.text : [], {});
+  return records;
+}
+
+function extractCabText(value) {
+  if (typeof value === "string") {
+    return value;
+  }
+  if (Array.isArray(value)) {
+    return value.filter((item) => typeof item === "string").join(" ");
+  }
+  return "";
 }
 
 function parseTsvRecords(lines) {
