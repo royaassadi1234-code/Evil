@@ -3634,27 +3634,7 @@ h1 {
   overflow-wrap: anywhere;
 }
 
-.paired-theme-hit {
-  flex-basis: min(620px, 92vw);
-}
-
-.paired-passage-text {
-  display: grid;
-  gap: 10px;
-}
-
-.passage-language {
-  display: block;
-  margin-bottom: 3px;
-  color: var(--accent-strong);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.aligned-word {
-  color: #7f0000;
+.theme-hit mark {
   font-weight: 800;
 }
 

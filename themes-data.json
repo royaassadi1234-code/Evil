@@ -3,7 +3,9 @@
     "id": "azhi-dahaka",
     "label": "Aži Dahāka",
     "description": "Avestan words and their corresponding Pahlavi renderings in Yasna 9.8 and 9.10, based on the red Avestan word-list alignment.",
-    "keywords": ["Aži Dahāka", "aži", "dahākəm", "drujim", "Aŋhra Maińiiu", "Θrita", "Kərəsāspa"],
+    "keywords": ["Dahāg", "druz", "Kirsāsp"],
+    "avestanKeywords": ["janat̰", "ažīm", "dahākəm", "ϑri.zafanəm", "ϑri.kamərəδəm", "xšuuaš.ašīm", "hazaŋhrā.yaōxštīm", "ašaōjaŋhəm", "daēuuīm", "drujim", "gaēϑāuuiiō", "druuaṇtəm", "kərəṇtat̰", "aŋhrō", "maińiiuš", "mahrkāi", "aṣ̌ahe", "ϑritō", "sāmanąm", "aṣ̌iš", "āiiaptəm", "puϑra", "zaiiōiϑe", "uruuāxšaiiō", "kərəsāspasca", "t̰kaēšō", "uparō", "kairiiō", "gaēsuš", "gaδauuarō"],
+    "pahlaviKeywords": ["zad", "az ī dahāg", "dahāg", "sē zafar", "sē kamāl", "šaš aš", "hazār wizōstār", "adādag ī pad gōhrag", "dēw", "druz", "gēhānān", "druwand", "kirrēnīd", "gannāg", "mēnōy", "margīh", "ahlāyīh", "Srid", "Sāmān", "tarsagāhīh", "ābādīh", "dō pus", "ul zād hēnd", "Urwāš", "Kirsāsp", "dādwar", "abarkār", "ǰuyān", "gēswar", "gadwar"],
     "confirmed": []
   },
   {

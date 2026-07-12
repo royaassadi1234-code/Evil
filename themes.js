@@ -32,57 +32,6 @@ const THEME_PAGE_SIZE = 5;
 const DICTIONARY_URL = "mpcd-workspace-dictionary.json";
 const THEME_KEYWORD_DEBOUNCE_MS = 300;
 let themeKeywordRenderTimer = null;
-const AZHI_DAHAKA_PASSAGES = [
-  {
-    location: "Y9.8a",
-    avestan: "yō janat̰ ažīm dahākəm ϑri.zafanəm ϑri.kamərəδəm xšuuaš.ašīm hazaŋhrā.yaōxštīm ašaōjaŋhəm",
-    pahlavi: "kē =š zad az ī dahāg ī sē zafar ī sē kamāl ī šaš aš ī hazār wizōstār adādag ī pad gōhrag",
-    avestanTerms: ["janat̰", "ažīm", "dahākəm", "ϑri.zafanəm", "ϑri.kamərəδəm", "xšuuaš.ašīm", "hazaŋhrā.yaōxštīm", "ašaōjaŋhəm"],
-    pahlaviTerms: ["zad", "az ī", "dahāg", "sē zafar", "sē kamāl", "šaš aš", "hazār wizōstār", "adādag ī pad gōhrag"]
-  },
-  {
-    location: "Y9.8b",
-    avestan: "daēuuīm drujim aγəm gaēϑāuuiiō druuaṇtəm",
-    pahlavi: "ī wasōz dēw druz ī wattar ō gēhānān zyāngār ud druwand",
-    avestanTerms: ["daēuuīm", "drujim", "gaēϑāuuiiō", "druuaṇtəm"],
-    pahlaviTerms: ["dēw", "druz", "gēhānān", "druwand"]
-  },
-  {
-    location: "Y9.8c",
-    avestan: "yąm ašaōjastəmąm drujim fraca kərəṇtat̰ aŋhrō maińiiuš auui yąm astuuaitīm gaēϑąm mahrkāi aṣ̌ahe gaēϑanąm",
-    pahlavi: "kē =š wasōztom druz frāz kirrēnīd gannāg mēnōy abar ō astōmandān gēhān pad margīh ī ān ahlāyīh gēhān",
-    avestanTerms: ["drujim", "kərəṇtat̰", "aŋhrō", "maińiiuš", "mahrkāi", "aṣ̌ahe"],
-    pahlaviTerms: ["druz", "kirrēnīd", "gannāg", "mēnōy", "margīh", "ahlāyīh"]
-  },
-  {
-    location: "Y9.10b",
-    avestan: "ϑritō sāmanąm səuuištō ϑritiiō mąm maṣ̌iiō astuuaiϑiiāi hunūta gaēϑaiiāi hā aɱāi aṣ̌iš ərənāuui tat̰ aɱāi jasat̰ āiiaptəm",
-    pahlavi: "Srid ī Sāmān ī sūdxwāstār ... ōy ān tarsagāhīh kird ō ōy mad ābādīh",
-    avestanTerms: ["ϑritō", "sāmanąm", "aṣ̌iš", "āiiaptəm"],
-    pahlaviTerms: ["Srid", "Sāmān", "tarsagāhīh", "ābādīh"]
-  },
-  {
-    location: "Y9.10c",
-    avestan: "yat̰ hē puϑra us.zaiiōiϑe uruuāxšaiiō kərəsāspasca",
-    pahlavi: "kū az ōy dō pus ul zād hēnd Urwāš ud Kirsāsp",
-    avestanTerms: ["puϑra", "zaiiōiϑe", "uruuāxšaiiō", "kərəsāspasca"],
-    pahlaviTerms: ["dō pus", "ul zād hēnd", "Urwāš", "Kirsāsp"]
-  },
-  {
-    location: "Y9.10d",
-    avestan: "t̰kaēšō ańiiō dātō.rāzō",
-    pahlavi: "dādwar any būd Urwāš kū =š wizīr ud dādwarīh kird",
-    avestanTerms: ["t̰kaēšō"],
-    pahlaviTerms: ["dādwar"]
-  },
-  {
-    location: "Y9.10e",
-    avestan: "āat̰ ańiiō uparō.kairiiō yuua gaēsuš gaδauuarō",
-    pahlavi: "ān any abarkār X ǰuyān gēswar ud gadwar Kirsāsp kū =š kār pad gad wēš kird",
-    avestanTerms: ["uparō", "kairiiō", "gaēsuš", "gaδauuarō"],
-    pahlaviTerms: ["abarkār", "ǰuyān", "gēswar", "gadwar"]
-  }
-];
 const TRANSLITERATION_MAP = {
   "\u0100": "A",
   "\u0101": "a",
@@ -326,13 +275,11 @@ function renderThemes() {
     return;
   }
 
-  if (theme.id === "azhi-dahaka") {
-    renderAzhiDahakaTheme(theme);
-    return;
-  }
-
   const terms = getKeywordTerms();
-  const results = themeState.texts.map((text) => getThemeMatches(text, terms));
+  const results = themeState.texts.map((text) => {
+    const textTerms = getThemeTermsForText(theme, text, terms);
+    return { ...getThemeMatches(text, textTerms), terms: textTerms };
+  });
   const totalHits = results.reduce((sum, result) => sum + result.matches.length, 0);
   const textHits = results.filter((result) => result.matches.length > 0).length;
 
@@ -380,7 +327,7 @@ function renderThemeColumn(result, terms) {
         <span class="count-pill ${total ? "hit" : "miss"}">${total}</span>
       </header>
       <div class="theme-passages">
-        ${visible.length ? visible.map((match) => renderThemeHit(match, terms, result.text)).join("") : `<div class="empty-state">No suggested passages for this theme.</div>`}
+        ${visible.length ? visible.map((match) => renderThemeHit(match, result.terms || terms, result.text)).join("") : `<div class="empty-state">No suggested passages for this theme.</div>`}
       </div>
       ${total > THEME_PAGE_SIZE ? renderThemePagination(result.text.id, currentPage, pageCount) : ""}
     </article>
@@ -404,44 +351,13 @@ function renderThemeHit(match, terms, text) {
   `;
 }
 
-function renderAzhiDahakaTheme(theme) {
-  statusEl.textContent = `${AZHI_DAHAKA_PASSAGES.length} aligned passages`;
-  renderThemeOverview(theme, [], []);
-  comparisonEl.innerHTML = `
-    <article class="theme-column azhi-dahaka-results">
-      <header>
-        <div><div class="siglum">Av. ↔ Pahl.</div><h2>Yasna 9 aligned passages</h2></div>
-        <span class="count-pill hit">${AZHI_DAHAKA_PASSAGES.length}</span>
-      </header>
-      <div class="theme-passages">
-        ${AZHI_DAHAKA_PASSAGES.map(renderAzhiDahakaPassage).join("")}
-      </div>
-    </article>`;
-}
-
-function renderAzhiDahakaPassage(passage) {
-  return `
-    <section class="theme-hit paired-theme-hit">
-      <div class="theme-hit-meta"><span>${escapeHtml(passage.location)}</span></div>
-      <div class="paired-passage-text">
-        <p><span class="passage-language">Avestan</span>${boldMatchedTerms(passage.avestan, passage.avestanTerms)}</p>
-        <p><span class="passage-language">Pahlavi</span>${boldMatchedTerms(passage.pahlavi, passage.pahlaviTerms)}</p>
-      </div>
-    </section>`;
-}
-
-function boldMatchedTerms(text, terms) {
-  const ranges = findMatchRanges(text, terms).sort((a, b) => a.start - b.start || b.end - a.end);
-  if (!ranges.length) return escapeHtml(text);
-  let html = "";
-  let cursor = 0;
-  ranges.forEach(({ start, end }) => {
-    if (start < cursor) return;
-    html += escapeHtml(text.slice(cursor, start));
-    html += `<strong class="aligned-word">${escapeHtml(text.slice(start, end))}</strong>`;
-    cursor = end;
-  });
-  return html + escapeHtml(text.slice(cursor));
+function getThemeTermsForText(theme, text, fallbackTerms) {
+  if (theme.id !== "azhi-dahaka") {
+    return fallbackTerms;
+  }
+  return text.id === "av-corpus"
+    ? (theme.avestanKeywords || [])
+    : (theme.pahlaviKeywords || []);
 }
 
 function renderThemeLocationLink(text, location) {
